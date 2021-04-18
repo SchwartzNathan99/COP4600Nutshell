@@ -17,14 +17,15 @@ int runSetAlias(char *name, char *word);
 %union {char *string;}
 
 %start cmd_line
-%token <string> BYE CD STRING ALIAS END
+%token <string> BYE CD STRING ALIAS UNALIAS END
 
 %%
 cmd_line    :
 	BYE END 		                {exit(1); return 1; }
 	| CD STRING END        			{runCD($2); return 1;}
 	| ALIAS STRING STRING END		{runSetAlias($2, $3); return 1;}
-
+	| UNALIAS STRING END				{runRemoveAlias($2); return 1;}
+	| ALIAS END						{runGetAlias(); return 1;}
 %%
 
 int yyerror(char *s) {
@@ -78,5 +79,35 @@ int runSetAlias(char *name, char *word) {
 	strcpy(aliasTable.word[aliasIndex], word);
 	aliasIndex++;
 
+	return 1;
+}
+
+int runGetAlias() {
+	for (int i = 0; i < aliasIndex; i++)
+	{
+		printf("Alias Name: %s\n", aliasTable.name[i]);
+		printf("Alias Word: %s\n", aliasTable.word[i]);
+	}
+
+	return 1;
+}
+
+int runRemoveAlias(char *name) {
+	int pos;
+
+	for (int i = 0; i < aliasIndex; i++) {
+		if(strcmp(aliasTable.name[i], name) == 0) {
+			pos = i;
+			return 1;
+		}
+	}
+
+	for(int i = pos; i < aliasIndex; i++)
+	{
+		strcpy(aliasTable.name[i], aliasTable.name[i+1]);
+		strcpy(aliasTable.word[i], aliasTable.word[i+1]);
+	}
+
+	aliasIndex--;
 	return 1;
 }
