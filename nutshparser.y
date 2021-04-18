@@ -13,12 +13,13 @@ int yyerror(char *s);
 int runCD(char* arg);
 int runSetAlias(char *name, char *word);
 int reassign(char *variable, char *word);
+int runPrintenv();
 %}
 
 %union {char *string;}
 
 %start cmd_line
-%token <string> BYE CD STRING ALIAS	SETENV END
+%token <string> BYE CD STRING ALIAS	SETENV PRINTENV END
 
 %%
 cmd_line    :
@@ -26,6 +27,8 @@ cmd_line    :
 	| CD STRING END        			{runCD($2); return 1;}
 	| ALIAS STRING STRING END		{runSetAlias($2, $3); return 1;}
 	| SETENV STRING STRING END      {reassign($2, $3); return 1;}
+	| PRINTENV END                  {runPrintenv(); return 1; }
+
 
 %%
 
@@ -84,6 +87,24 @@ int runSetAlias(char *name, char *word) {
 }
 int reassign(char *variable, char *word)
 {
-	variable = word;
+	for(int i = 0; i < varIndex; i++)
+	{
+		if (varTable.var[i] == variable)
+		{
+			strcpy(varTable.word, word);
+			break;
+		}
+	}
 	return 1;
+}
+int runPrintenv()
+{
+	for(int i = 0; i < varIndex; i++)
+	{
+		printf(varTable.var[i]);
+		 printf("=");
+		 printf(varTable.word[i]);
+		 printf("\n");
+	}
+	
 }
