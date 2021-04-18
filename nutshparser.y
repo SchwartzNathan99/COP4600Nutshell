@@ -12,18 +12,20 @@ int yylex(void);
 int yyerror(char *s);
 int runCD(char* arg);
 int runSetAlias(char *name, char *word);
+int reassign(char *variable, char *word);
 %}
 
 %union {char *string;}
 
 %start cmd_line
-%token <string> BYE CD STRING ALIAS END
+%token <string> BYE CD STRING ALIAS	SETENV END
 
 %%
 cmd_line    :
 	BYE END 		                {exit(1); return 1; }
 	| CD STRING END        			{runCD($2); return 1;}
 	| ALIAS STRING STRING END		{runSetAlias($2, $3); return 1;}
+	| SETENV STRING STRING END      {reassign($2, $3); return 1;}
 
 %%
 
@@ -78,5 +80,10 @@ int runSetAlias(char *name, char *word) {
 	strcpy(aliasTable.word[aliasIndex], word);
 	aliasIndex++;
 
+	return 1;
+}
+int reassign(char *variable, char *word)
+{
+	variable = word;
 	return 1;
 }

@@ -37,8 +37,9 @@ ANYCHAR            [)(*&%$#@!`;,\.a-zA-Z0-9'/*_=~ -][)(*&%$#@!`;,\.a-zA-Z0-9'/*_
 
 [ ]		            { }
 bye                 { return BYE; }
-cd		            { return CD;}
+cd		            { return CD; }
 alias		        { return ALIAS; }
+setenv              { return SETENV; }
 "\n"		        { return END; }
 [\"]                 { BEGIN(string_condition); }
 {CHAR}+              {if(ifAlias(yytext)) {
