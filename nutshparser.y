@@ -7,6 +7,14 @@
 #include <unistd.h>
 #include <string.h>
 #include "global.h"
+#include <sys/types.h>
+#include <dirent.h>
+#include <fcntl.h>
+#include <time.h>
+#include <errno.h>
+#include <sys/stat.h>
+#include <sys/times.h>
+#include <sys/wait.h>
 
 int yylex(void);
 int yyerror(char *s);
@@ -32,6 +40,7 @@ cmd_line    :
 	| UNSETENV STRING END           {reassign($2, ""); return 1; }
 	| UNALIAS STRING END				{runRemoveAlias($2); return 1;}
 	| ALIAS END						{runGetAlias(); return 1;}
+	| LS END						{runGetFiles(); return 1;}
 %%
 
 int yyerror(char *s) {
@@ -138,5 +147,21 @@ int runRemoveAlias(char *name) {
 	}
 
 	aliasIndex--;
+	return 1;
+}
+
+int runGetFiles() {
+    struct dirent **list;
+
+    int count = scandir("./", &list, NULL, alphasort );
+     if( count < 0 ){
+         perror("Couldn't open the directory");
+         exit(1);
+     }
+    printf("%u items in directory\n", count);
+    for( int i=0; i<count;i++){
+            printf("%s\n", list[i]->d_name);
+     }
+
 	return 1;
 }
