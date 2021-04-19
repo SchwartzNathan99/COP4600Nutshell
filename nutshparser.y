@@ -89,9 +89,10 @@ int reassign(char *variable, char *word)
 {
 	for(int i = 0; i < varIndex; i++)
 	{
-		if (varTable.var[i] == variable)
+		if (strcmp(varTable.var[i], variable) == 0)
 		{
-			strcpy(varTable.word, word);
+			printf("match found");
+			strcpy(varTable.word[i], word);
 			break;
 		}
 	}
