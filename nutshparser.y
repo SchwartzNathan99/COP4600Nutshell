@@ -12,18 +12,24 @@ int yylex(void);
 int yyerror(char *s);
 int runCD(char* arg);
 int runSetAlias(char *name, char *word);
+int reassign(char *variable, char *word);
+int runPrintenv();
 %}
 
 %union {char *string;}
 
 %start cmd_line
-%token <string> BYE CD STRING ALIAS UNALIAS END
+%token <string> BYE CD STRING ALIAS	SETENV PRINTENV UNSETENV END
+
 
 %%
 cmd_line    :
 	BYE END 		                {exit(1); return 1; }
 	| CD STRING END        			{runCD($2); return 1;}
 	| ALIAS STRING STRING END		{runSetAlias($2, $3); return 1;}
+	| SETENV STRING STRING END      {reassign($2, $3); return 1;}
+	| PRINTENV END                  {runPrintenv(); return 1; }
+	| UNSETENV STRING END           {reassign($2, ""); return 1; }
 	| UNALIAS STRING END				{runRemoveAlias($2); return 1;}
 	| ALIAS END						{runGetAlias(); return 1;}
 %%
@@ -82,6 +88,29 @@ int runSetAlias(char *name, char *word) {
 	return 1;
 }
 
+int reassign(char *variable, char *word)
+{
+	for(int i = 0; i < varIndex; i++)
+	{
+		if (strcmp(varTable.var[i], variable) == 0)
+		{
+			printf("match found");
+			strcpy(varTable.word[i], word);
+			break;
+		}
+	}
+	return 1;
+}
+int runPrintenv()
+{
+	for(int i = 0; i < varIndex; i++)
+	{
+		printf(varTable.var[i]);
+		 printf("=");
+		 printf(varTable.word[i]);
+		 printf("\n");
+	}
+  
 int runGetAlias() {
 	for (int i = 0; i < aliasIndex; i++)
 	{
