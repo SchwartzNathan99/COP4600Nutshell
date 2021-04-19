@@ -19,7 +19,7 @@ int runPrintenv();
 %union {char *string;}
 
 %start cmd_line
-%token <string> BYE CD STRING ALIAS	SETENV PRINTENV END
+%token <string> BYE CD STRING ALIAS	SETENV PRINTENV UNSETENV END
 
 %%
 cmd_line    :
@@ -28,6 +28,7 @@ cmd_line    :
 	| ALIAS STRING STRING END		{runSetAlias($2, $3); return 1;}
 	| SETENV STRING STRING END      {reassign($2, $3); return 1;}
 	| PRINTENV END                  {runPrintenv(); return 1; }
+	| UNSETENV STRING END           {reassign($2, ""); return 1; }
 
 
 %%
