@@ -27,7 +27,7 @@ int runPrintenv();
 %union {char *string;}
 
 %start cmd_line
-%token <string> BYE CD STRING ALIAS	SETENV PRINTENV UNSETENV END
+%token <string> BYE CD STRING ALIAS	UNALIAS LS SETENV PRINTENV UNSETENV END
 
 
 %%
@@ -119,7 +119,8 @@ int runPrintenv()
 		 printf(varTable.word[i]);
 		 printf("\n");
 	}
-  
+}
+
 int runGetAlias() {
 	for (int i = 0; i < aliasIndex; i++)
 	{
