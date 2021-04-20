@@ -23,7 +23,7 @@ bool ifAlias(char* name){
     return false;
 }
 %}
-%array
+%pointer
 %option noyywrap
 %x string_condition
 
@@ -42,8 +42,10 @@ alias		        { return ALIAS; }
 setenv              { return SETENV; }
 printenv            { return PRINTENV; }
 unsetenv            { return UNSETENV; }
+cmd                 { return CMD; }
+{ANYCHAR}+           { return CHECKUNKNOWN; }
 "\n"		        { return END; }
-[\"]                 { BEGIN(string_condition); }
+[\"]                { BEGIN(string_condition); }
 {CHAR}+              {if(ifAlias(yytext)) {
                         printf("yytext: %s\n", yytext);
                         //source: https://www.cs.princeton.edu/~appel/modern/c/software/flex/flex.html
