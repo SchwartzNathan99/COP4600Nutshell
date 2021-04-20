@@ -44,6 +44,8 @@ printenv            { return PRINTENV; }
 unsetenv            { return UNSETENV; }
 cmd                 { return CMD; }
 {ANYCHAR}+           { return CHECKUNKNOWN; }
+unalias             { return UNALIAS; }
+ls                  { return LS; }
 "\n"		        { return END; }
 [\"]                { BEGIN(string_condition); }
 {CHAR}+              {if(ifAlias(yytext)) {

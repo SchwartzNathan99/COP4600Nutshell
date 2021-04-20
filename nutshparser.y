@@ -7,6 +7,14 @@
 #include <unistd.h>
 #include <string.h>
 #include "global.h"
+#include <sys/types.h>
+#include <dirent.h>
+#include <fcntl.h>
+#include <time.h>
+#include <errno.h>
+#include <sys/stat.h>
+#include <sys/times.h>
+#include <sys/wait.h>
 
 extern char *yytext;
 
@@ -24,7 +32,8 @@ int checkUnknown();
 %union {char *string;}
 
 %start cmd_line
-%token <string> BYE CD STRING ALIAS	SETENV PRINTENV UNSETENV CMD CHECKUNKNOWN END
+
+%token <string> BYE CD STRING ALIAS	UNALIAS LS SETENV PRINTENV UNSETENV CMD CHECKUNKNOWN END
 
 %%
 cmd_line    :
@@ -35,8 +44,10 @@ cmd_line    :
 	| PRINTENV END                  {runPrintenv(); return 1; }
 	| UNSETENV STRING END           {reassign($2, ""); return 1; }
 	| CMD STRING END                {parseCMD($2); return 1; }
-    | CHECKUNKNOWN END          	{yylval.string = yytext; checkUnknown(); return 1;}
-
+  | CHECKUNKNOWN END          	{yylval.string = yytext; checkUnknown(); return 1;}
+	| UNALIAS STRING END				{runRemoveAlias($2); return 1;}
+	| ALIAS END						{runGetAlias(); return 1;}
+	| LS END						{runGetFiles(); return 1;}
 %%
 
 int yyerror(char *s) {
@@ -92,6 +103,7 @@ int runSetAlias(char *name, char *word) {
 
 	return 1;
 }
+
 int reassign(char *variable, char *word)
 {
 	for(int i = 0; i < varIndex; i++)
@@ -114,15 +126,15 @@ int runPrintenv()
 		 printf(varTable.word[i]);
 		 printf("\n");
 	}
-	
 }
+
 int parseCMD(char *arguments)
 {
 
 }
 int checkUnknown()
 {
-		for(int i = 0; i < varIndex; i++)
+	for(int i = 0; i < varIndex; i++)
 	{
 		if (strcmp(varTable.var[i], yylval.string) == 0)
 		{
@@ -131,4 +143,50 @@ int checkUnknown()
 			break;
 		}
 	}
+}
+
+int runGetAlias() {
+	for (int i = 0; i < aliasIndex; i++)
+	{
+		printf("Alias Name: %s\n", aliasTable.name[i]);
+		printf("Alias Word: %s\n", aliasTable.word[i]);
+	}
+
+	return 1;
+}
+
+int runRemoveAlias(char *name) {
+	int pos;
+
+	for (int i = 0; i < aliasIndex; i++) {
+		if(strcmp(aliasTable.name[i], name) == 0) {
+			pos = i;
+			return 1;
+		}
+	}
+
+	for(int i = pos; i < aliasIndex; i++)
+	{
+		strcpy(aliasTable.name[i], aliasTable.name[i+1]);
+		strcpy(aliasTable.word[i], aliasTable.word[i+1]);
+	}
+
+	aliasIndex--;
+	return 1;
+}
+
+int runGetFiles() {
+    struct dirent **list;
+
+    int count = scandir("./", &list, NULL, alphasort );
+     if( count < 0 ){
+         perror("Couldn't open the directory");
+         exit(1);
+     }
+    printf("%u items in directory\n", count);
+    for( int i=0; i<count;i++){
+            printf("%s\n", list[i]->d_name);
+     }
+
+	return 1;
 }
