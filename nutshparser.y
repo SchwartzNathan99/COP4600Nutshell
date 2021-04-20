@@ -44,8 +44,8 @@ cmd_line    :
 	| PRINTENV END                  {runPrintenv(); return 1; }
 	| UNSETENV STRING END           {reassign($2, ""); return 1; }
 	| CMD STRING END                {parseCMD($2); return 1; }
-  | CHECKUNKNOWN END          	{yylval.string = yytext; checkUnknown(); return 1;}
-	| UNALIAS STRING END				{runRemoveAlias($2); return 1;}
+  	| CHECKUNKNOWN END          	{yylval.string = yytext; checkUnknown(); return 1;}
+	| UNALIAS STRING END			{runRemoveAlias($2); return 1;}
 	| ALIAS END						{runGetAlias(); return 1;}
 	| LS END						{runGetFiles(); return 1;}
 %%
