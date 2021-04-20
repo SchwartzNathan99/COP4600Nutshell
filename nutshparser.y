@@ -16,19 +16,24 @@
 #include <sys/times.h>
 #include <sys/wait.h>
 
+extern char *yytext;
+
 int yylex(void);
 int yyerror(char *s);
 int runCD(char* arg);
 int runSetAlias(char *name, char *word);
 int reassign(char *variable, char *word);
 int runPrintenv();
+int parseCMD(char *arguments);
+int checkUnknown();
+
 %}
 
 %union {char *string;}
 
 %start cmd_line
-%token <string> BYE CD STRING ALIAS	UNALIAS LS SETENV PRINTENV UNSETENV END
 
+%token <string> BYE CD STRING ALIAS	UNALIAS LS SETENV PRINTENV UNSETENV CMD CHECKUNKNOWN END
 
 %%
 cmd_line    :
@@ -38,6 +43,8 @@ cmd_line    :
 	| SETENV STRING STRING END      {reassign($2, $3); return 1;}
 	| PRINTENV END                  {runPrintenv(); return 1; }
 	| UNSETENV STRING END           {reassign($2, ""); return 1; }
+	| CMD STRING END                {parseCMD($2); return 1; }
+  | CHECKUNKNOWN END          	{yylval.string = yytext; checkUnknown(); return 1;}
 	| UNALIAS STRING END				{runRemoveAlias($2); return 1;}
 	| ALIAS END						{runGetAlias(); return 1;}
 	| LS END						{runGetFiles(); return 1;}
@@ -118,6 +125,23 @@ int runPrintenv()
 		 printf("=");
 		 printf(varTable.word[i]);
 		 printf("\n");
+	}
+}
+
+int parseCMD(char *arguments)
+{
+
+}
+int checkUnknown()
+{
+	for(int i = 0; i < varIndex; i++)
+	{
+		if (strcmp(varTable.var[i], yylval.string) == 0)
+		{
+			strcpy(varTable.var[i], yylval.string);
+			printf(varTable.word[i]);
+			break;
+		}
 	}
 }
 
